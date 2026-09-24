@@ -1,10 +1,37 @@
 <!-- Paste this whole file into a single Squarespace Code Block on the Jobs page. -->
 <style>
+  /* Change this one value to recolor the buttons (e.g. to UDC's brand color). */
+  #udc-jobs { --udc-accent: #1a1a1a; }
+
   .udc-job-list { display: grid; gap: 0; }
-  .udc-job { padding: 1rem 0; border-bottom: 1px solid currentColor; }
-  .udc-job a { font-weight: 600; }
-  .udc-job-location { margin-top: 0.25rem; opacity: 0.75; font-size: 0.95em; }
-  .udc-jobs-all { margin-top: 1.5rem; }
+  .udc-job {
+    display: flex; align-items: center; gap: 1.5rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+  }
+  .udc-job-info { min-width: 0; }
+  .udc-job-title {
+    font-size: 1.35em; font-weight: 600; line-height: 1.3;
+    text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px;
+  }
+  .udc-job-title:hover { text-decoration-thickness: 2px; }
+  .udc-job-location { margin-top: 0.3rem; opacity: 0.75; font-size: 1em; }
+  .udc-apply {
+    flex-shrink: 0;
+    display: inline-block;
+    padding: 0.7em 1.4em;
+    background: var(--udc-accent); color: #fff !important;
+    border: 2px solid var(--udc-accent); border-radius: 4px;
+    font-weight: 600; font-size: 0.95em; letter-spacing: 0.03em;
+    text-decoration: none !important; white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+  }
+  .udc-apply:hover { background: transparent; color: var(--udc-accent) !important; }
+  .udc-jobs-all { margin-top: 1.5rem; font-weight: 600; }
+
+  @media (max-width: 600px) {
+    .udc-job { flex-direction: column-reverse; align-items: flex-start; gap: 0.9rem; }
+  }
 </style>
 
 <div id="udc-jobs">
@@ -48,19 +75,34 @@
       var item = document.createElement("div");
       item.className = "udc-job";
 
+      var apply = document.createElement("a");
+      apply.className = "udc-apply";
+      apply.href = job.url;
+      apply.textContent = "Apply now";
+      apply.target = "_blank";
+      apply.rel = "noopener noreferrer";
+      apply.setAttribute("aria-label", "Apply now: " + job.title);
+      item.appendChild(apply);
+
+      var info = document.createElement("div");
+      info.className = "udc-job-info";
+
       var link = document.createElement("a");
+      link.className = "udc-job-title";
       link.href = job.url;
       link.textContent = job.title;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      item.appendChild(link);
+      info.appendChild(link);
 
       if (job.location) {
         var location = document.createElement("div");
         location.className = "udc-job-location";
         location.textContent = job.location;
-        item.appendChild(location);
+        info.appendChild(location);
       }
+
+      item.appendChild(info);
 
       list.appendChild(item);
     });
@@ -75,7 +117,7 @@
   allJobsLink.href = ALL_JOBS_URL;
   allJobsLink.target = "_blank";
   allJobsLink.rel = "noopener noreferrer";
-  allJobsLink.textContent = "View all current openings on LinkedIn";
+  allJobsLink.textContent = "View all current openings on LinkedIn →";
   allJobs.appendChild(allJobsLink);
   container.appendChild(allJobs);
 })();

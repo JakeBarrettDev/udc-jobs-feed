@@ -1,0 +1,14 @@
+{
+  "name": "udc-jobs-feed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Daily sync of UDC's public LinkedIn job openings into a jobs.js file for Squarespace.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "update-jobs": "node src/scrapeJobs.js",
+    "test": "node --test tests/"
+  }
+}

@@ -1,0 +1,73 @@
+name: Update UDC jobs feed
+
+on:
+  schedule:
+    - cron: "0 12 * * *" # daily, ~7am Central
+  workflow_dispatch:
+    inputs:
+      allow_empty:
+        description: "Allow publishing an empty feed (only if UDC truly has zero openings)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # commit public/jobs.js
+  pages: write # deploy GitHub Pages
+  id-token: write # required by deploy-pages
+  actions: write # keepalive (see below)
+
+concurrency:
+  group: update-jobs
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}jobs.js
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Run tests
+        run: npm test
+
+      # On failure this exits non-zero, leaves public/jobs.js untouched, and
+      # skips the remaining steps, so the last good feed stays live.
+      - name: Scrape jobs
+        run: npm run update-jobs
+        env:
+          ALLOW_EMPTY: ${{ inputs.allow_empty || 'false' }}
+
+      - name: Commit feed if changed
+        run: |
+          if git diff --quiet -- public/jobs.js; then
+            echo "Feed unchanged; nothing to commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/jobs.js
+            git commit -m "chore: update UDC jobs feed"
+            git push
+          fi
+
+      # GitHub disables scheduled workflows after 60 days without repo activity.
+      # Re-enabling the (already enabled) workflow resets that timer, so the
+      # schedule keeps running even if the job list doesn't change for months.
+      - name: Keep schedule alive
+        run: gh workflow enable update-jobs.yml
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: public
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

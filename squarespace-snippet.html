@@ -1,0 +1,82 @@
+<!-- Paste this whole file into a single Squarespace Code Block on the Jobs page. -->
+<style>
+  .udc-job-list { display: grid; gap: 0; }
+  .udc-job { padding: 1rem 0; border-bottom: 1px solid currentColor; }
+  .udc-job a { font-weight: 600; }
+  .udc-job-location { margin-top: 0.25rem; opacity: 0.75; font-size: 0.95em; }
+  .udc-jobs-all { margin-top: 1.5rem; }
+</style>
+
+<div id="udc-jobs">
+  <p>Loading current openings…</p>
+</div>
+
+<!-- Bump ?v= if you ever need to force browsers to fetch a fresh copy. -->
+<script src="https://jakebarrettdev.github.io/udc-jobs-feed/jobs.js?v=1"></script>
+
+<script>
+(function () {
+  var ALL_JOBS_URL = "https://www.linkedin.com/company/REPLACE_WITH_UDC_SLUG/jobs/";
+  var container = document.getElementById("udc-jobs");
+  if (!container) return;
+
+  function isSafeUrl(url) {
+    try {
+      var protocol = new URL(url).protocol;
+      return protocol === "https:" || protocol === "http:";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  var loaded = Array.isArray(window.UDC_JOBS);
+  var jobs = loaded
+    ? window.UDC_JOBS.filter(function (job) { return job && job.title && isSafeUrl(job.url); })
+    : [];
+
+  container.innerHTML = "";
+
+  if (loaded && jobs.length === 0) {
+    var empty = document.createElement("p");
+    empty.textContent = "There are currently no listed openings.";
+    container.appendChild(empty);
+  } else if (jobs.length > 0) {
+    var list = document.createElement("div");
+    list.className = "udc-job-list";
+
+    jobs.forEach(function (job) {
+      var item = document.createElement("div");
+      item.className = "udc-job";
+
+      var link = document.createElement("a");
+      link.href = job.url;
+      link.textContent = job.title;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      item.appendChild(link);
+
+      if (job.location) {
+        var location = document.createElement("div");
+        location.className = "udc-job-location";
+        location.textContent = job.location;
+        item.appendChild(location);
+      }
+
+      list.appendChild(item);
+    });
+
+    container.appendChild(list);
+  }
+  // If jobs.js failed to load, show only the LinkedIn link below.
+
+  var allJobs = document.createElement("p");
+  allJobs.className = "udc-jobs-all";
+  var allJobsLink = document.createElement("a");
+  allJobsLink.href = ALL_JOBS_URL;
+  allJobsLink.target = "_blank";
+  allJobsLink.rel = "noopener noreferrer";
+  allJobsLink.textContent = "View all current openings on LinkedIn";
+  allJobs.appendChild(allJobsLink);
+  container.appendChild(allJobs);
+})();
+</script>

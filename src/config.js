@@ -3,10 +3,10 @@ export const config = {
   // UDC's numeric LinkedIn company ID. Find it by opening UDC's LinkedIn
   // company page → Jobs → "See all jobs"; the URL contains f_C=<id>.
   // Can be overridden with the LINKEDIN_COMPANY_ID environment variable.
-  linkedinCompanyId: process.env.LINKEDIN_COMPANY_ID || "REPLACE_WITH_UDC_COMPANY_ID",
+  linkedinCompanyId: process.env.LINKEDIN_COMPANY_ID || "3288198" // UDC - Ultra Defense Corp,
 
   // Public page used for the "View all current openings" fallback link.
-  companyJobsUrl: "https://www.linkedin.com/company/REPLACE_WITH_UDC_SLUG/jobs/",
+  companyJobsUrl: "https://www.linkedin.com/company/udc-usa/jobs/",
 
   // LinkedIn's public (logged-out) job search results. This is the same
   // endpoint the public jobs page uses to load results; no login needed.

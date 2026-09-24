@@ -9,6 +9,6 @@
   },
   "scripts": {
     "update-jobs": "node src/scrapeJobs.js",
-    "test": "node --test tests/"
+    "test": "node --test"
   }
 }

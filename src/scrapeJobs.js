@@ -36,19 +36,49 @@ export function detectBlock(status, html) {
   return null;
 }
 
-async function fetchPage(companyId, start) {
-  let response;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// How long to wait before retrying: LinkedIn's Retry-After header if it sent a
+// sensible one, otherwise the configured delay.
+function retryDelayMs(response) {
+  const retryAfter = Number(response?.headers.get("retry-after"));
+  if (retryAfter > 0 && retryAfter * 1000 <= config.maxRetryDelayMs) return retryAfter * 1000;
+  return config.retryDelayMs;
+}
+
+async function fetchOnce(url) {
   try {
-    response = await fetch(config.sourceUrl(companyId, start), {
+    const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT, "Accept-Language": "en-US,en;q=0.9" },
       redirect: "follow",
       signal: AbortSignal.timeout(30_000),
     });
+    return { response, html: await response.text() };
   } catch (err) {
-    throw new ScrapeError(`Could not load jobs source (network error: ${err.message})`);
+    return { error: err };
   }
-  const html = await response.text();
-  return { status: response.status, html, finalUrl: response.url };
+}
+
+// Fetches one page, retrying once after a pause on temporary failures
+// (rate limiting, LinkedIn server errors, network errors). Bot blocks and
+// login walls are not retried.
+export async function fetchPage(companyId, start) {
+  const url = config.sourceUrl(companyId, start);
+  let result = await fetchOnce(url);
+
+  const status = result.response?.status;
+  if (result.error || status === 429 || (status >= 500 && status <= 599)) {
+    const delay = retryDelayMs(result.response);
+    const reason = result.error ? `network error (${result.error.message})` : `HTTP ${status}`;
+    console.log(`Got ${reason}; waiting ${Math.round(delay / 1000)}s and retrying once…`);
+    await sleep(delay);
+    result = await fetchOnce(url);
+  }
+
+  if (result.error) {
+    throw new ScrapeError(`Could not load jobs source (network error: ${result.error.message})`);
+  }
+  return { status: result.response.status, html: result.html, finalUrl: result.response.url };
 }
 
 export async function scrapeJobs(companyId) {
@@ -75,7 +105,7 @@ export async function scrapeJobs(companyId) {
 
     all.push(...listings);
     if (listings.length < config.pageSize) break;
-    await new Promise((resolve) => setTimeout(resolve, config.delayBetweenPagesMs));
+    await sleep(config.delayBetweenPagesMs);
   }
 
   return all;

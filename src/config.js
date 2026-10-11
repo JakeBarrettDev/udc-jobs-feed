@@ -18,6 +18,10 @@ export const config = {
   maxPages: 10, // hard cap: 100 jobs is plenty for UDC
   delayBetweenPagesMs: 2000,
 
+  // On a temporary failure (429 rate limit, 5xx, network error), wait and retry once.
+  retryDelayMs: 5 * 60_000,
+  maxRetryDelayMs: 10 * 60_000, // honor LinkedIn's Retry-After header up to this long
+
   allowedJobHosts: ["linkedin.com"],
 
   outputPath: "public/jobs.js",

@@ -6,7 +6,8 @@ import path from "node:path";
 import vm from "node:vm";
 import { cleanText, isAllowedJobUrl, normalizeJobs } from "../src/normalizeJobs.js";
 import { generateJobsFile, readJobsFile } from "../src/generateJobsFile.js";
-import { parseListings, detectBlock } from "../src/scrapeJobs.js";
+import { parseListings, detectBlock, fetchPage } from "../src/scrapeJobs.js";
+import { config } from "../src/config.js";
 
 const fixture = fs.readFileSync(new URL("./fixtures/linkedin-page.html", import.meta.url), "utf8");
 
@@ -100,4 +101,53 @@ test("readJobsFile reads back what generateJobsFile wrote", () => {
   fs.writeFileSync(file, generateJobsFile(jobs));
   assert.deepEqual(readJobsFile(file), jobs);
   assert.equal(readJobsFile(file + ".missing"), null);
+});
+
+// Replaces global fetch with a scripted sequence of responses (and makes
+// retries instant); returns the call log. Uses a plain object rather than
+// Response because Response rejects LinkedIn's non-standard 999 status.
+function stubFetch(t, responses) {
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  const savedDelay = config.retryDelayMs;
+  config.retryDelayMs = 0;
+  t.mock.method(console, "log", () => {});
+  globalThis.fetch = async (url) => {
+    calls.push(url);
+    const next = responses.shift();
+    if (next instanceof Error) throw next;
+    return { status: next.status, url, headers: new Headers(next.headers), text: async () => next.body ?? "" };
+  };
+  t.after(() => {
+    globalThis.fetch = realFetch;
+    config.retryDelayMs = savedDelay;
+  });
+  return calls;
+}
+
+test("retries once after a 429, then succeeds", async (t) => {
+  const calls = stubFetch(t, [{ status: 429 }, { status: 200, body: fixture }]);
+  const page = await fetchPage("123", 0);
+  assert.equal(calls.length, 2);
+  assert.equal(page.status, 200);
+});
+
+test("retries network errors once, then gives up", async (t) => {
+  const calls = stubFetch(t, [new Error("ECONNRESET"), new Error("ECONNRESET")]);
+  await assert.rejects(fetchPage("123", 0), /network error/);
+  assert.equal(calls.length, 2);
+});
+
+test("does not retry a bot block (999)", async (t) => {
+  const calls = stubFetch(t, [{ status: 999 }]);
+  const page = await fetchPage("123", 0);
+  assert.equal(calls.length, 1);
+  assert.equal(page.status, 999);
+});
+
+test("gives up after one retry if still rate limited", async (t) => {
+  const calls = stubFetch(t, [{ status: 429 }, { status: 429 }]);
+  const page = await fetchPage("123", 0);
+  assert.equal(calls.length, 2);
+  assert.equal(page.status, 429); // scrapeJobs turns this into a failure via detectBlock
 });

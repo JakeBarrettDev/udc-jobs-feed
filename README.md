@@ -78,4 +78,4 @@ Symptom: the Action fails with *"contains job cards but none could be parsed"*. 
 2. Update the patterns in `selectors` in `src/config.js`.
 3. Update `tests/fixtures/linkedin-page.html` to match the new markup, then run `npm test` and `npm run update-jobs`.
 
-If the Action fails with a **999 / 429 / login wall** error, LinkedIn is blocking the request. This project deliberately doesn't try to get around that (no proxies, cookies, or logins). A single failure usually clears up on the next day's run. If it keeps failing, it's time to move to an ATS or a manually maintained list.
+Temporary problems (a 429 rate limit, a LinkedIn server error, or a network error) are retried once automatically after a pause, set by `retryDelayMs` in `src/config.js`. If the Action still fails with a **999 / 429 / login wall** error, LinkedIn is blocking the request. This project deliberately doesn't try to get around that (no proxies, cookies, or logins). A single failure usually clears up on the next day's run. If it keeps failing, it's time to move to an ATS or a manually maintained list.

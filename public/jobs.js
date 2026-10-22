@@ -1,13 +1,8 @@
-// Generated automatically by the UDC jobs feed on 2026-10-21T12:14:03.150Z. Do not edit by hand.
+// Generated automatically by the UDC jobs feed on 2026-10-22T12:15:01.174Z. Do not edit by hand.
 window.UDC_JOBS = [
   {
     "title": "Ballistic Test Engineer",
     "url": "https://www.linkedin.com/jobs/view/4474313758",
-    "location": "Kingsville, MO"
-  },
-  {
-    "title": "Case Engineer",
-    "url": "https://www.linkedin.com/jobs/view/4474347282",
     "location": "Kingsville, MO"
   },
   {

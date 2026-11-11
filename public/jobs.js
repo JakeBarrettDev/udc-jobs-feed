@@ -1,4 +1,4 @@
-// Generated automatically by the UDC jobs feed on 2026-10-22T12:15:01.174Z. Do not edit by hand.
+// Generated automatically by the UDC jobs feed on 2026-11-11T12:09:06.848Z. Do not edit by hand.
 window.UDC_JOBS = [
   {
     "title": "Ballistic Test Engineer",
@@ -14,11 +14,6 @@ window.UDC_JOBS = [
     "title": "Process Engineer",
     "url": "https://www.linkedin.com/jobs/view/4474362140",
     "location": "Kingsville, MO"
-  },
-  {
-    "title": "Process Engineer - Pyrotechnics",
-    "url": "https://www.linkedin.com/jobs/view/4474360702",
-    "location": "Marshall, TX"
   },
   {
     "title": "Proposal Manager",

@@ -1,4 +1,4 @@
-// Generated automatically by the UDC jobs feed on 2026-11-11T12:09:06.848Z. Do not edit by hand.
+// Generated automatically by the UDC jobs feed on 2026-11-14T12:07:55.716Z. Do not edit by hand.
 window.UDC_JOBS = [
   {
     "title": "Ballistic Test Engineer",
@@ -14,15 +14,5 @@ window.UDC_JOBS = [
     "title": "Process Engineer",
     "url": "https://www.linkedin.com/jobs/view/4474362140",
     "location": "Kingsville, MO"
-  },
-  {
-    "title": "Proposal Manager",
-    "url": "https://www.linkedin.com/jobs/view/4469225379",
-    "location": "Tampa, FL"
-  },
-  {
-    "title": "Quality Engineer",
-    "url": "https://www.linkedin.com/jobs/view/4477861964",
-    "location": "Marshall, TX"
   }
 ];
